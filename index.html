@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaScheduler - Instagram Post Scheduler</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(to right, #3a7bd5, #00d2ff);
+            color: white;
+            padding: 20px 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 80px 0;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #3a7bd5;
+        }
+
+        p {
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to right, #3a7bd5, #00d2ff);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: right;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .features {
+            background-color: white;
+            padding: 80px 0;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: #3a7bd5;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #3a7bd5;
+        }
+
+        .stats {
+            background: linear-gradient(to right, #3a7bd5, #00d2ff);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .stats h2 {
+            font-size: 36px;
+            margin-bottom: 50px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
+            background-color: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <nav>
+            <div class="logo">InstaScheduler</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#stats">Stats</a>
+                <a href="dashboard.html" class="cta-button">Dashboard</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Schedule Your Instagram Posts with Ease</h1>
+                <p>InstaScheduler helps you plan and automate your Instagram content, saving you time and boosting your engagement.</p>
+                <a href="dashboard.html" class="cta-button">Start Scheduling</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://media.sproutsocial.com/uploads/2022/05/How-to-post-on-instagram-from-pc.svg" alt="Instagram Post Scheduler Dashboard">
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📅</div>
+                    <h3>Easy Scheduling</h3>
+                    <p>Plan your posts days, weeks, or months in advance.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Bulk Upload</h3>
+                    <p>Upload multiple images at once for efficient planning.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>Analytics</h3>
+                    <p>Track your post performance and engagement rates.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure</h3>
+                    <p>Your data and account information are always protected.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stats" class="stats">
+        <div class="container">
+            <h2>Our Impact</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">10k+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1M+</div>
+                    <div class="stat-label">Posts Scheduled</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">30%</div>
+                    <div class="stat-label">Avg. Engagement Increase</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Customer Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2025 InstaScheduler. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+</html>
