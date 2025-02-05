@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Post Scheduler</title>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-storage.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(to bottom, #3a7bd5, #00d2ff);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .sidebar button:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+        h2 {
+            color: #3a7bd5;
+            margin-bottom: 20px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3a7bd5;
+            box-shadow: 0 0 0 2px rgba(58,123,213,0.2);
+        }
+        button {
+            background: linear-gradient(to right, #3a7bd5, #00d2ff);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #scheduled-posts {
+            margin-top: 30px;
+        }
+        .post {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .post button {
+            padding: 8px 15px;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .file-upload-area {
+            border: 2px dashed #3a7bd5;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-area:hover {
+            background-color: rgba(58, 123, 213, 0.1);
+        }
+
+        .upload-icon {
+            margin-bottom: 10px;
+        }
+
+        .upload-icon svg {
+            width: 48px;
+            height: 48px;
+            color: #3a7bd5;
+        }
+
+        .file-preview-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .file-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-preview .remove-file {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar">
+        <button onclick="showCreatePosts()">Create Posts</button>
+        <button onclick="showScheduledPosts()">Scheduled Posts</button>
+    </div>
+    <div class="main-content">
+        <div id="firebase-setup" class="fade-in">
+            <h2>Enter Your Firebase Setup Details</h2>
+
+            <!-- Firebase Setup Fields -->
+            <h3>Firebase Project Details</h3>
+            <p>To connect your app to Firebase, you need to retrieve the following details from your Firebase console. Make sure you have already set up Firebase Realtime Database and Cloud Storage in your project.</p>
+
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey" placeholder="API Key">
+
+            <label for="authDomain">Auth Domain:</label>
+            <input type="text" id="authDomain" placeholder="Auth Domain">
+
+            <label for="databaseURL">Database URL:</label>
+            <input type="text" id="databaseURL" placeholder="Database URL">
+
+            <label for="projectId">Project ID:</label>
+            <input type="text" id="projectId" placeholder="Project ID">
+
+            <label for="storageBucket">Storage Bucket:</label>
+            <input type="text" id="storageBucket" placeholder="Storage Bucket">
+
+            <label for="messagingSenderId">Messaging Sender ID:</label>
+            <input type="text" id="messagingSenderId" placeholder="Messaging Sender ID">
+
+            <label for="appId">App ID:</label>
+            <input type="text" id="appId" placeholder="App ID">
+
+            <label for="measurementId">Measurement ID:</label>
+            <input type="text" id="measurementId" placeholder="Measurement ID">
+            <button onclick="initializeFirebase()">Save & Connect</button>
+
+
+            <p><strong>Note:</strong> To get these details:</p>
+            <ul>
+                <li>Go to your Firebase Console at <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a>.</li>
+                <li>Select your project and go to "Project Settings" (click the gear icon).</li>
+                <li>Under the "General" tab, you'll find most of these details. For example, the API key, Auth domain, and App ID.</li>
+                <li>Make sure you've enabled Firebase Realtime Database and Firebase Storage in the "Build" section.</li>
+            </ul>
+
+            <!-- Cohere Setup Fields -->
+            <h3>Cohere API Key for python script</h3>
+            <p><strong>To get your Cohere API key:</strong></p>
+            <ul>
+                <li>Go to the <a href="https://www.youtube.com/watch?v=1neUeQIELmU&pp=ygUZaG93IHRvIGdldCBjb2hlcmUgYXBpIGtleQ%3D%3D" target="_blank">Cohere tutorial</a> and sign up for an account.</li>
+                <li>Once logged in, navigate to the API section and generate a new API key.</li>
+            </ul>
+
+            <!-- Button to Initialize Firebase and Cohere -->
+
+            <!-- Firebase Rules Setup Information -->
+            <h3>Setting Up Firebase Cloud Storage Rules</h3>
+            <p>Before connecting your app to Firebase Storage, make sure you've set up the correct security rules. The following rule allows public read and write access:</p>
+            <pre>
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write;
+    }
+  }
+}
+    </pre>
+            <p><strong>Important:</strong> You should customize these rules based on your app’s needs, especially for production environments to ensure data security.</p>
+
+            <!-- Firebase Realtime Database Test Mode Setup -->
+            <h3>Setting Up Firebase Realtime Database (Test Mode)</h3>
+            <p>Firebase Realtime Database should be set to "Test Mode" initially for development purposes. You can adjust the rules later for production. Use the following configuration:</p>
+            <pre>
+{
+  "rules": {
+    ".read": "auth != null",  // Ensure only authenticated users can read data
+    ".write": "auth != null"  // Ensure only authenticated users can write data
+  }
+}
+    </pre>
+            <p><strong>Important:</strong> Make sure to test your application thoroughly in test mode before going live. In production, you'll need to modify the rules for better security.</p>
+
+        </div>
+
+
+        <div id="user-folder-setup" style="display:none;" class="fade-in">
+            <h2>Enter Your Instagram User Folder</h2>
+            <input type="text" id="userFolder" placeholder="Enter User Folder">
+            <button onclick="setUserFolder()">Proceed</button>
+        </div>
+
+        <div id="dashboard" style="display:none;">
+            <div id="create-posts" class="fade-in">
+                <h2>Upload New Images (ONLY IMAGES)</h2>
+                <div id="file-upload-area" class="file-upload-area">
+                    <input type="file" id="mediaUpload" multiple style="display: none;">
+                    <div class="upload-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <p>Drag and drop files here or click to upload</p>
+                </div>
+                <div id="file-preview-area" class="file-preview-area"></div>
+                <textarea id="postDescription" placeholder="Enter posts description"></textarea>
+                <select id="postInterval">
+                    <option value="24h">24 Hours</option>
+                    <option value="48h">48 Hours</option>
+                    <option value="72h">72 Hours</option>
+                </select>
+                <button onclick="uploadMedia()">Upload & Schedule</button>
+            </div>
+            <div id="scheduled-posts" style="display:none;">
+                <h2>Scheduled Posts</h2>
+                <div id="posts-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let firebaseConfig = {};
+    let userFolder = "";
+
+    function showCreatePosts() {
+        document.getElementById("create-posts").style.display = "block";
+        document.getElementById("scheduled-posts").style.display = "none";
+        document.getElementById("create-posts").classList.add("fade-in");
+    }
+
+    function showScheduledPosts() {
+        document.getElementById("create-posts").style.display = "none";
+        document.getElementById("scheduled-posts").style.display = "block";
+        loadScheduledPosts();
+    }
+    function initFileUpload() {
+        const fileUploadArea = document.getElementById('file-upload-area');
+        const fileInput = document.getElementById('mediaUpload');
+        const filePreviewArea = document.getElementById('file-preview-area');
+
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.backgroundColor = 'rgba(58, 123, 213, 0.1)';
+        });
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.style.backgroundColor = '';
+        });
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.backgroundColor = '';
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+    }
+
+    function handleFiles(files) {
+        const filePreviewArea = document.getElementById('file-preview-area');
+        filePreviewArea.innerHTML = '';
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview';
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="File preview">
+                    <span class="remove-file" onclick="removeFile(${index})">×</span>
+                `;
+                filePreviewArea.appendChild(preview);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removeFile(index) {
+        const fileInput = document.getElementById('mediaUpload');
+        const files = Array.from(fileInput.files);
+        files.splice(index, 1);
+
+        const newFileList = new DataTransfer();
+        files.forEach(file => newFileList.items.add(file));
+        fileInput.files = newFileList.files;
+
+        handleFiles(fileInput.files);
+    }
+
+    function uploadMedia() {
+        const files = document.getElementById("mediaUpload").files;
+        const description = document.getElementById("postDescription").value;
+        const interval = document.getElementById("postInterval").value;
+
+        if (!files.length || !description.trim()) {
+            alert("Please upload media and add a description.");
+            return;
+        }
+
+        let storageRef = firebase.storage().ref();
+        let uploadedURLs = [];
+        let uploadCount = 0;
+
+        for (let file of files) {
+            let fileRef = storageRef.child(`${userFolder}/${file.name}`);
+            fileRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL();
+            }).then(url => {
+                uploadedURLs.push(url);
+                uploadCount++;
+
+                if (uploadCount === files.length) {
+                    savePost(uploadedURLs.join(","), description, interval);
+                }
+            }).catch(error => console.error("Upload error:", error));
+        }
+    }
+
+    // ... (rest of the script content remains unchanged) ...
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedConfig = localStorage.getItem("firebaseConfig");
+        if (savedConfig) {
+            firebaseConfig = JSON.parse(savedConfig);
+            firebase.initializeApp(firebaseConfig);
+            document.getElementById("firebase-setup").style.display = "none";
+            document.getElementById("user-folder-setup").style.display = "block";
+            document.getElementById("user-folder-setup").classList.add("fade-in");
+        }
+        initFileUpload();
+    });
+    function initializeFirebase() {
+        firebaseConfig = {
+            apiKey: document.getElementById("apiKey").value,
+            authDomain: document.getElementById("authDomain").value,
+            databaseURL: document.getElementById("databaseURL").value,
+            projectId: document.getElementById("projectId").value,
+            storageBucket: document.getElementById("storageBucket").value,
+            messagingSenderId: document.getElementById("messagingSenderId").value,
+            appId: document.getElementById("appId").value,
+            measurementId: document.getElementById("measurementId").value
+        };
+
+        localStorage.setItem("firebaseConfig", JSON.stringify(firebaseConfig));
+
+        firebase.initializeApp(firebaseConfig);
+
+        document.getElementById("firebase-setup").style.display = "none";
+        document.getElementById("user-folder-setup").style.display = "block";
+        document.getElementById("user-folder-setup").classList.add("fade-in");
+    }
+
+    function setUserFolder() {
+        userFolder = document.getElementById("userFolder").value.trim();
+        if (userFolder) {
+            const userRef = firebase.database().ref(`scheduled_posts/${userFolder}`);
+            userRef.once("value", (snapshot) => {
+                if (!snapshot.exists()) {
+                    userRef.set({});
+                }
+            });
+
+            document.getElementById("user-folder-setup").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+            showCreatePosts();
+        }
+    }
+
+    function loadScheduledPosts() {
+        const postContainer = document.getElementById("posts-container");
+        postContainer.innerHTML = "";
+
+        firebase.database().ref(`scheduled_posts/${userFolder}`).once("value", (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                let post = childSnapshot.val();
+                let postKey = childSnapshot.key;
+
+                let postDiv = document.createElement("div");
+                postDiv.className = "post fade-in";
+                postDiv.innerHTML = `
+                    <p><strong>Media URLs:</strong> ${post.media.split(',').map(url => `<a href="${url}" target="_blank">${url}</a>`).join(', ')}</p>
+                    <p><strong>Scheduled Every:</strong> ${post.interval}</p>
+                    <p><strong>Caption:</strong> ${post.caption}</p>
+                    <button onclick="deletePost('${postKey}')">Delete</button>
+                    <button onclick="editPost('${postKey}', '${post.caption}')">Edit</button>
+                `;
+                postContainer.appendChild(postDiv);
+            });
+        });
+    }
+
+    function deletePost(postKey) {
+        firebase.database().ref(`scheduled_posts/${userFolder}/${postKey}`).remove();
+        loadScheduledPosts();
+    }
+
+    function editPost(postKey, oldCaption) {
+        let newCaption = prompt("Edit Caption:", oldCaption);
+        if (newCaption) {
+            firebase.database().ref(`scheduled_posts/${userFolder}/${postKey}`).update({
+                caption: newCaption
+            });
+            loadScheduledPosts();
+        }
+    }
+
+    function uploadMedia() {
+        const files = document.getElementById("mediaUpload").files;
+        const description = document.getElementById("postDescription").value;
+        const interval = document.getElementById("postInterval").value;
+
+        if (!files.length || !description.trim()) {
+            alert("Please upload media and add a description.");
+            return;
+        }
+
+        let storageRef = firebase.storage().ref();
+        let uploadedURLs = [];
+        let uploadCount = 0;
+
+        for (let file of files) {
+            let fileRef = storageRef.child(`${userFolder}/${file.name}`);
+            fileRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL();
+            }).then(url => {
+                uploadedURLs.push(url);
+                uploadCount++;
+
+                if (uploadCount === files.length) {
+                    savePost(uploadedURLs.join(","), description, interval);
+                }
+            }).catch(error => console.error("Upload error:", error));
+        }
+    }
+
+    function savePost(mediaURLs, description, interval) {
+        let newPostKey = firebase.database().ref(`scheduled_posts/${userFolder}`).push().key;
+
+        firebase.database().ref(`scheduled_posts/${userFolder}/${newPostKey}`).set({
+            interval: interval,
+            media: mediaURLs,
+            caption: description
+        });
+
+        alert("Post Scheduled Successfully!");
+        document.getElementById("mediaUpload").value = "";
+        document.getElementById("postDescription").value = "";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedConfig = localStorage.getItem("firebaseConfig");
+        if (savedConfig) {
+            firebaseConfig = JSON.parse(savedConfig);
+            firebase.initializeApp(firebaseConfig);
+            document.getElementById("firebase-setup").style.display = "none";
+            document.getElementById("user-folder-setup").style.display = "block";
+            document.getElementById("user-folder-setup").classList.add("fade-in");
+        }
+    });
+</script>
+</body>
+</html>
