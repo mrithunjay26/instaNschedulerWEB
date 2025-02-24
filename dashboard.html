@@ -188,7 +188,6 @@
         <div id="firebase-setup" class="fade-in">
             <h2>Enter Your Firebase Setup Details</h2>
 
-            <!-- Firebase Setup Fields -->
             <h3>Firebase Project Details</h3>
             <p>To connect your app to Firebase, you need to retrieve the following details from your Firebase console. Make sure you have already set up Firebase Realtime Database and Cloud Storage in your project.</p>
 
@@ -226,7 +225,6 @@
                 <li>Make sure you've enabled Firebase Realtime Database and Firebase Storage in the "Build" section.</li>
             </ul>
 
-            <!-- Cohere Setup Fields -->
             <h3>Cohere API Key for python script</h3>
             <p><strong>To get your Cohere API key:</strong></p>
             <ul>
@@ -234,9 +232,6 @@
                 <li>Once logged in, navigate to the API section and generate a new API key.</li>
             </ul>
 
-            <!-- Button to Initialize Firebase and Cohere -->
-
-            <!-- Firebase Rules Setup Information -->
             <h3>Setting Up Firebase Cloud Storage Rules</h3>
             <p>Before connecting your app to Firebase Storage, make sure you've set up the correct security rules. The following rule allows public read and write access:</p>
             <pre>
@@ -251,7 +246,6 @@ service firebase.storage {
     </pre>
             <p><strong>Important:</strong> You should customize these rules based on your app’s needs, especially for production environments to ensure data security.</p>
 
-            <!-- Firebase Realtime Database Test Mode Setup -->
             <h3>Setting Up Firebase Realtime Database (Test Mode)</h3>
             <p>Firebase Realtime Database should be set to "Test Mode" initially for development purposes. You can adjust the rules later for production. Use the following configuration:</p>
             <pre>
@@ -395,7 +389,6 @@ service firebase.storage {
         }
     }
 
-    // ... (rest of the script content remains unchanged) ...
 
     document.addEventListener('DOMContentLoaded', () => {
         const savedConfig = localStorage.getItem("firebaseConfig");
